@@ -1,0 +1,25 @@
+services:
+  api:
+    image: simple-api:db-test
+    env_file:
+        - .env
+    ports:
+        - "9000:9000"
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:17
+    env_file:
+        - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

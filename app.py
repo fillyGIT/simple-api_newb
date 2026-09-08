@@ -1,5 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-
+import os
+import psycopg
+import json
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -17,7 +19,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
-            self.wfile.write(b'{"service": "simple-api", "version": "1.1"}')
+            self.wfile.write(b'{"service": "simple-api", "version": "1.2"}')
         
         elif self.path == "/status":
             self.send_response(200)
@@ -25,14 +27,44 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'{"status": "running"}')
     
+        elif self.path == "/items":
+            with conn.cursor() as cur:
+                cur.execute("SELECT id, name FROM items;")
+                rows = cur.fetchall()
+
+            items = []
+
+            for row in rows:
+                items.append({
+                    "id": row[0],
+                    "name": row[1]
+                })
+
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(items).encode())
+
         else:
             self.send_response(404)
             self.end_headers()
             self.wfile.write(b"not found\n")
 
+db_host = os.getenv("DB_HOST")
+db_user = os.getenv("POSTGRES_USER")
+db_password = os.getenv("POSTGRES_PASSWORD")
+db_name = os.getenv("POSTGRES_DB")
 
-server = HTTPServer(("0.0.0.0", 8000), Handler)
+conn = psycopg.connect(
+    host=db_host,
+    dbname=db_name,
+    user=db_user,
+    password=db_password
+)
 
-print("simple-api listening on port 8000")
+port = int(os.getenv("PORT", "8000"))
+server = HTTPServer(("0.0.0.0", port), Handler)
+
+print(f"simple-api listening on port{port}")
 server.serve_forever()
 

@@ -18,7 +18,13 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.end_headers()
             self.wfile.write(b'{"service": "simple-api", "version": "1.0"}')
-            
+        
+        elif self.path == "/status":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b'{"status": "running"}')
+    
         else:
             self.send_response(404)
             self.end_headers()

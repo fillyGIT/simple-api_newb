@@ -23,6 +23,9 @@ jobs:
       - name: Create environment file
         run: cp .env.example .env
 
+      - name: Build API image
+        run: docker build -t simple-api:db-test .
+
       - name: Start services
         run: docker compose up -d
 

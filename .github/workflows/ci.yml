@@ -29,5 +29,18 @@ jobs:
       - name: Start services
         run: docker compose up -d
 
+      - name: Wait for API
+        run: |
+          for i in {1..30}; do
+            if curl -f http://127.0.0.1:9000/health; then
+              exit 0
+            fi
+              sleep 1
+          done
+          exit 1
+
+      - name: Run tests
+        run: pytest
+
       - name: Check Python syntax
         run: python -m py_compile app.py tests/test_api.py

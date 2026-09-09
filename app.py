@@ -50,6 +50,25 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"not found\n")
 
+    def do_POST(self):
+        content_length = int(self.headers["Content-Length"])
+        body = self.rfile.read(content_length)
+        data = json.loads(body)
+        name = data["name"]
+
+        with conn.cursor() as cur:
+            cur.execute(
+               "INSERT INTO items (name) VALUES (%s);",
+               (name,)
+            )
+
+
+        conn.commit()
+        self.send_response(201)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(json.dumps({"name": name}).encode())
+
 db_host = os.getenv("DB_HOST")
 db_user = os.getenv("POSTGRES_USER")
 db_password = os.getenv("POSTGRES_PASSWORD")

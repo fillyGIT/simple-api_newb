@@ -7,7 +7,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     permissions:
-      content: read
+      contents: read
       packages: write
 
     steps:
